@@ -73,6 +73,7 @@ contract Exchange is IExchange {
         address wallet;
         address authAddr;
         address interceptor;
+        address brokerInterceptor;
         uint    amountS;
         uint    amountB;
         uint    validSince;
@@ -83,7 +84,6 @@ contract Exchange is IExchange {
         bool    optAllOrNone;
         bool    marginSplitAsFee;
         bytes32 orderHash;
-        address brokerInterceptor;
         uint    rateS;
         uint    rateB;
         uint    fillAmountS;
@@ -161,6 +161,7 @@ contract Exchange is IExchange {
             addresses[4],
             addresses[5],
             addresses[6],
+            0x0,
             orderValues[0],
             orderValues[1],
             orderValues[2],
@@ -170,7 +171,6 @@ contract Exchange is IExchange {
             option & OPTION_MASK_CAP_BY_AMOUNTB > 0 ? true : false,
             option & OPTION_MASK_ALL_OR_NONE > 0 ? true : false,
             false,
-            0x0,
             0x0,
             0,
             0,
@@ -383,6 +383,7 @@ contract Exchange is IExchange {
                 ctx.addressesList[i][3],
                 ctx.addressesList[i][4],
                 ctx.addressesList[i][5],
+                0x0,  // brokderInterceptor
                 uintArgs[0],
                 uintArgs[1],
                 uintArgs[2],
@@ -393,7 +394,6 @@ contract Exchange is IExchange {
                 ctx.optionList[i] & OPTION_MASK_ALL_OR_NONE > 0 ? true : false,
                 marginSplitAsFee,
                 0x0,
-                0x0,  // brokderTracker
                 uintArgs[5],
                 uintArgs[1],
                 0,   // fillAmountS
