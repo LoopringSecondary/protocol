@@ -23,7 +23,7 @@ pragma experimental "ABIEncoderV2";
 /// @author Daniel Wang - <daniel@loopring.org>.
 library Data {
 
-    struct Order1 {
+    struct Order {
         // required fields
         address owner;
         address tokenS;
@@ -44,7 +44,7 @@ library Data {
         bytes   sig;
     }
 
-    struct MiningParams1 {
+    struct MiningParam {
         // required fields
         address feeRecipient;
         address miner;
@@ -55,15 +55,15 @@ library Data {
         address sig;
     }
 
-    struct OrderMiningParams {
+    struct OrderMiningParam {
         // required fields;
         bool marginSplitAsFee;
+        uint rateS;
+        uint rateB;
     }
 
-    struct State1 {
+    struct State {
         bytes32 orderHash;
-        uint    rateS;
-        uint    rateB;
         uint    splitS;
         uint    splitB;
         uint    lrcFee;
@@ -71,11 +71,9 @@ library Data {
         uint    fillAmountS;
     }
 
-    struct OrderState1 {
-      Order1 raw;
-      State1 state;
-      OrderMiningParams params;
+    struct NewOrderState {
+      Order order;
+      State state;
+      OrderMiningParam[] params;
     }
-
-
 }

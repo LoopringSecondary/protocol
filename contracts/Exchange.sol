@@ -114,15 +114,15 @@ contract Exchange is IExchange, NoDefaultFunc {
         bytes32       ringHash;         // computed
     }
 
-    struct Context1 {
+    struct NewContext {
         uint ringIndex;
         uint ringSize;
         uint ringDepth;
         uint ringHash;
-        Data.OrderState1[][] orders;
-        Data.MiningParams1 params;
-        // ITradeDelegate delegate;
-        // BrokerRegistry brokerRegistry;
+        Data.NewOrderState[][] states;
+        Data.MiningParam miningParam;
+        // ITradeDelegate delegate2;
+        // BrokerRegistry brokerRegistry2;
     }
 
     constructor(
