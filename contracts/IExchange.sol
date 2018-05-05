@@ -123,4 +123,20 @@ contract IExchange {
         uint8           feeSelections
         )
         public;
+
+    // @de Submit a order-ring for settlement.
+    // @parm specs: This array of uint16 marks which optional mining- and order- attributes
+    //               exist in other funcition params.
+    //               `specs[0]` specifies which optional minging attributes are provided.
+    //               `specs[1]` to `specs[n]`, n is the size of `specs` specifies which optional
+    //               per-order attributes are provided.
+
+    // function submitRing2(
+    //     uint16[]    specs,
+    //     address[]   addressList
+    //     uint[]      uintList
+    //     uint8[]     uint8List,
+    //     bytes[]     bytesList
+    //     )
+    //     public;
 }

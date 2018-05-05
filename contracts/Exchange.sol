@@ -67,7 +67,7 @@ contract Exchange is IExchange, NoDefaultFunc {
 
     uint    public constant RATE_RATIO_SCALE    = 10000;
 
-    struct Order {
+    struct OrderState {
         address owner;
         address broker;
         address tokenS;
@@ -109,7 +109,7 @@ contract Exchange is IExchange, NoDefaultFunc {
         uint          ringSize;         // computed
         ITradeDelegate         delegate;
         IBrokerRegistry        brokerRegistry;
-        Order[]  orders;
+        OrderState[]  orders;
         bytes32       ringHash;         // computed
     }
 
@@ -144,7 +144,7 @@ contract Exchange is IExchange, NoDefaultFunc {
     {
         uint size = orderHashes.length;
         require(size > 0 && size % 32 == 0);
-        
+
         verifyAuthenticationGetInterceptor(
             owner,
             tx.origin
@@ -180,7 +180,7 @@ contract Exchange is IExchange, NoDefaultFunc {
         uint t = (cutoff == 0 || cutoff >= block.timestamp) ? block.timestamp : cutoff;
 
         bytes20 tokenPair = bytes20(token1) ^ bytes20(token2);
- 
+
         ITradeDelegate(delegateAddress).setTradingPairCutoffs(
             owner,
             tokenPair,
@@ -241,7 +241,7 @@ contract Exchange is IExchange, NoDefaultFunc {
             addressesList.length,
             ITradeDelegate(delegateAddress),
             IBrokerRegistry(brokerRegistryAddress),
-            new Order[](addressesList.length),
+            new OrderState[](addressesList.length),
             0x0 // ringHash
         );
 
@@ -334,7 +334,7 @@ contract Exchange is IExchange, NoDefaultFunc {
             uint[6] memory uintArgs = ctx.valuesList[i];
             bool marginSplitAsFee = (ctx.feeSelections & (uint8(1) << i)) > 0;
 
-            Order memory order = Order(
+            OrderState memory order = OrderState(
                 ctx.addressesList[i][0],
                 ctx.addressesList[i][1],
                 ctx.addressesList[i][2],
@@ -399,7 +399,7 @@ contract Exchange is IExchange, NoDefaultFunc {
         uint[] memory validSinceTimes = new uint[](ctx.ringSize);
 
         for (uint i = 0; i < ctx.ringSize; i++) {
-            Order memory order = ctx.orders[i];
+            OrderState memory order = ctx.orders[i];
 
             require(
                 !ctx.delegate.cancelled(order.owner, order.orderHash),
@@ -508,10 +508,10 @@ contract Exchange is IExchange, NoDefaultFunc {
         view
     {
         uint ringSize = ctx.ringSize;
-        Order[] memory orders = ctx.orders;
+        OrderState[] memory orders = ctx.orders;
 
         for (uint i = 0; i < ringSize; i++) {
-            Order memory order = orders[i];
+            OrderState memory order = orders[i];
 
             if (order.optAllOrNone) {
                 require(
@@ -620,7 +620,7 @@ contract Exchange is IExchange, NoDefaultFunc {
         uint nextFillAmountS;
 
         for (uint i = 0; i < ringSize; i++) {
-            Order memory order = ctx.orders[i];
+            OrderState memory order = ctx.orders[i];
             uint lrcReceiable = 0;
 
             if (order.lrcFeeState == 0) {
@@ -736,7 +736,7 @@ contract Exchange is IExchange, NoDefaultFunc {
         uint q = 0;
         uint prevSplitB = ctx.orders[ctx.ringSize - 1].splitB;
         for (uint i = 0; i < ctx.ringSize; i++) {
-            Order memory order = ctx.orders[i];
+            OrderState memory order = ctx.orders[i];
             uint nextFillAmountS = ctx.orders[(i + 1) % ctx.ringSize].fillAmountS;
 
             // Store owner and tokenS of every order
@@ -787,8 +787,8 @@ contract Exchange is IExchange, NoDefaultFunc {
 
     /// @return The smallest order's index.
     function calculateOrderFillAmount(
-        Order order,
-        Order next,
+        OrderState order,
+        OrderState next,
         uint  i,
         uint  j,
         uint  smallestIdx
@@ -888,7 +888,7 @@ contract Exchange is IExchange, NoDefaultFunc {
 
     /// @dev validate order's parameters are OK.
     function validateOrder(
-        Order order
+        OrderState order
         )
         private
         view
@@ -904,7 +904,7 @@ contract Exchange is IExchange, NoDefaultFunc {
 
     /// @dev Get the Keccak-256 hash of order with specified parameters.
     function calculateOrderHash(
-        Order order
+        OrderState order
         )
         private
         view
