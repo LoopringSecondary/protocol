@@ -60,12 +60,68 @@ library OrderSpec {
         return spec & 0x8 != 0;
     }
 
+    function hasAuthAddr(uint16 spec)
+        public
+        pure
+        returns (bool)
+    {
+        return spec & 0x8 != 0;
+    }
+
+    function hasSignature(uint16 spec)
+        public
+        pure
+        returns (bool)
+    {
+        return spec & 0x8 != 0;
+    }
+
+    function hasBroker(uint16 spec)
+        public
+        pure
+        returns (bool)
+    {
+        return spec & 0x8 != 0;
+    }
+
+    function hasBrokerInterceptor(uint16 spec)
+        public
+        pure
+        returns (bool)
+    {
+        return spec & 0x8 != 0;
+    }
+
+    function hasWallet(uint16 spec)
+        public
+        pure
+        returns (bool)
+    {
+        return spec & 0x8 != 0;
+    }
+
+    function hasValidSince(uint16 spec)
+        public
+        pure
+        returns (bool)
+    {
+        return spec & 0x8 != 0;
+    }
+
+    function hasValidUntil(uint16 spec)
+        public
+        pure
+        returns (bool)
+    {
+        return spec & 0x8 != 0;
+    }
+
     function participation(uint16 spec)
         public
         pure
         returns (uint16 p)
     {
-        p = (spec >> 4) & 0xF;
+        p = (spec >> 5) & 0xF;
         require(p > 0);
     }
 }
@@ -88,7 +144,6 @@ contract RingAssembler {
         uint16[]    specs,
         address[]   addressList,
         uint[]      uintList,
-        uint8[]     uint8List,
         bytes[]     bytesList
         )
         private
@@ -97,26 +152,35 @@ contract RingAssembler {
     {
         Data.OrderDeck[] memory decks = new Data.OrderDeck[](0);
 
-
-   // // struct OrderDeck {
-   // //      NewOrderState[] orders;
-   // //  }
-        for (uint i = 1; i < specs.length; i++) {
-          // bit-0 = 1 iff this order is the last order of a deck.
-          if (specs[i].isLastInDeck()) {
-              // not the last order of the deck;
-     
-          }
-        }
-
-        
-
         uint j = 0;  // index of addressList
         uint k = 0;  // index of uintList
         uint l = 0;  // index of uint8List
-        uint m = 0;  // index of bytesList
 
-  
+        for (uint i = 1; i < specs.length; i++) {
+          Data.Order memory order = Data.Order(
+              addressList[j++],  // owner
+              addressList[j++],  // tokenS
+              0x0, // tokenB not known yet,
+              uintList[k++],     // amountS
+              uintList[k++],     // amountB
+              uintList[k++],     // lrcFee
+              // optional
+              specs[i].hasAuthAddr() ? addressList[j++] : 0x0,
+              specs[i].hasBroker() ? addressList[j++] : 0x0,
+              specs[i].hasBrokerInterceptor() ? addressList[j++] : 0x0,
+              specs[i].hasWallet() ? addressList[j++] : 0x0,
+              specs[i].hasValidSince() ? uintList[k++] : 0,
+              specs[i].hasValidUntil() ? uintList[k++] : 0,
+              specs[i].capByAmountB(),
+              specs[i].allOrNone(),
+              specs[i].hasSignature() ? bytesList[l++] : new bytes(0)
+          );
+
+          // bit-0 = 1 iff this order is the last order of a deck.
+          if (specs[i].isLastInDeck()) {
+              // not the last order of the deck;
+          }
+        }
 
     }
 }
