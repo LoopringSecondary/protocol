@@ -131,7 +131,7 @@ contract IExchange {
     //               `specs[1]` to `specs[n]`, n is the size of `specs` specifies which optional
     //               per-order attributes are provided.
 
-    // function submitRing2(
+    // function submitRingTight(
     //     uint16[]    specs,
     //     address[]   addressList
     //     uint[]      uintList

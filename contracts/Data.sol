@@ -71,9 +71,14 @@ library Data {
         uint    fillAmountS;
     }
 
+
     struct NewOrderState {
-      Order order;
-      State state;
-      OrderMiningParam[] params;
+        Order order;
+        State state;
+        OrderMiningParam[] params;
+    }
+
+    struct OrderDeck {
+        NewOrderState[] orders;
     }
 }

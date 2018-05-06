@@ -20,16 +20,17 @@ pragma experimental "ABIEncoderV2";
 
 import "./lib/AddressUtil.sol";
 import "./lib/BytesUtil.sol";
-import "./lib/Data.sol";
 import "./lib/ERC20.sol";
 import "./lib/MathUint.sol";
 import "./lib/MultihashUtil.sol";
 import "./lib/NoDefaultFunc.sol";
+import "./Data.sol";
 import "./IBrokerRegistry.sol";
 import "./IBrokerInterceptor.sol";
 import "./IExchange.sol";
 import "./ITokenRegistry.sol";
 import "./ITradeDelegate.sol";
+import "./RingAssembler.sol";
 
 
 /// @title An Implementation of IExchange.
@@ -42,7 +43,7 @@ import "./ITradeDelegate.sol";
 ///     https://github.com/BenjaminPrice
 ///     https://github.com/jonasshen
 ///     https://github.com/Hephyrius
-contract Exchange is IExchange, NoDefaultFunc {
+contract Exchange is IExchange, RingAssembler, NoDefaultFunc {
     using AddressUtil   for address;
     using MathUint      for uint;
 
@@ -112,17 +113,6 @@ contract Exchange is IExchange, NoDefaultFunc {
         IBrokerRegistry        brokerRegistry;
         OrderState[]  orders;
         bytes32       ringHash;         // computed
-    }
-
-    struct NewContext {
-        uint ringIndex;
-        uint ringSize;
-        uint ringDepth;
-        uint ringHash;
-        Data.NewOrderState[][] states;
-        Data.MiningParam miningParam;
-        // ITradeDelegate delegate2;
-        // BrokerRegistry brokerRegistry2;
     }
 
     constructor(
