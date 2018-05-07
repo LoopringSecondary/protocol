@@ -220,6 +220,61 @@ contract Exchange is IExchange, RingAssembler, NoDefaultFunc {
         );
     }
 
+    struct NewContext {
+        uint16[]    orderSpecs;
+        uint8[][]   ringSpecs;
+        address[]   addressList;
+        uint[]      uintList;
+        bytes[]     bytesList;
+
+        uint numOrders;
+        uint numRings;
+
+        Data.Order[] orders;
+        Data.Ring[] rings;
+    }
+
+    function submitRings(
+        uint16[]    orderSpecs,
+        uint8[][]   ringSpecs,
+        address[]   addressList,
+        uint[]      uintList,
+        bytes[]     bytesList
+        )
+        public
+    {
+        NewContext memory context = NewContext(
+            orderSpecs,
+            ringSpecs,
+            addressList,
+            uintList,
+            bytesList,
+            orderSpecs.length,
+            ringSpecs.length,
+            new Data.Order[](orderSpecs.length),
+            new Data.Ring[](ringSpecs.length)
+        );
+
+        buildOrders(context);
+        buildRings(context);
+    }
+
+    function buildOrders(
+        NewContext context
+        )
+        internal
+    {
+
+    }
+
+    function buildRings(
+        NewContext context
+        )
+        internal
+    {
+
+    }
+
     function submitRing(
         address[6][]  addressesList,
         uint[6][]     valuesList,

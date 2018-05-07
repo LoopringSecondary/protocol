@@ -42,6 +42,9 @@ library Data {
         bool    optCapByAmountB;
         bool    allOrNone;
         bytes   sig;
+
+        // computed fields
+        bytes32 orderHash;
     }
 
     struct MiningParam {
@@ -55,30 +58,22 @@ library Data {
         address sig;
     }
 
-    struct OrderMiningParam {
-        // required fields;
+    struct State {
+        // required fields
         bool marginSplitAsFee;
         uint rateS;
         uint rateB;
-    }
-
-    struct State {
-        bytes32 orderHash;
-        uint    splitS;
-        uint    splitB;
-        uint    lrcFee;
-        uint    lrcReward;
-        uint    fillAmountS;
+        // computed fields
+        uint splitS;
+        uint splitB;
+        uint lrcFee;
+        uint lrcReward;
+        uint fillAmountS;
     }
 
 
-    struct NewOrderState {
-        Order order;
-        State state;
-        OrderMiningParam[] params;
-    }
-
-    struct OrderDeck {
-        NewOrderState[] orders;
+    struct Participation{uint x;}
+    struct Ring{
+        Participation[] participations;
     }
 }

@@ -127,60 +127,60 @@ library OrderSpec {
 }
 
 contract RingAssembler {
-  using OrderSpec for uint16;
+  // using OrderSpec for uint16;
 
-   struct Ring {
-        uint ringIndex;
-        uint ringSize;
-        uint ringDepth;
-        bytes32 ringHash;
-        Data.OrderDeck[] decks;
-        Data.MiningParam miningParam;
-        ITradeDelegate delegate;
-        IBrokerRegistry brokerRegistry;
-    }
+  //  struct Ring {
+  //       uint ringIndex;
+  //       uint ringSize;
+  //       uint ringDepth;
+  //       bytes32 ringHash;
+  //       Data.OrderDeck[] decks;
+  //       Data.MiningParam miningParam;
+  //       ITradeDelegate delegate;
+  //       IBrokerRegistry brokerRegistry;
+  //   }
 
-    function assembleRing(
-        uint16[]    specs,
-        address[]   addressList,
-        uint[]      uintList,
-        bytes[]     bytesList
-        )
-        private
-        view
-        returns (Ring ring)
-    {
-        Data.OrderDeck[] memory decks = new Data.OrderDeck[](0);
+  //   function assembleRing(
+  //       uint16[]    specs,
+  //       address[]   addressList,
+  //       uint[]      uintList,
+  //       bytes[]     bytesList
+  //       )
+  //       private
+  //       view
+  //       returns (Ring ring)
+  //   {
+  //       Data.OrderDeck[] memory decks = new Data.OrderDeck[](0);
 
-        uint j = 0;  // index of addressList
-        uint k = 0;  // index of uintList
-        uint l = 0;  // index of uint8List
+  //       uint j = 0;  // index of addressList
+  //       uint k = 0;  // index of uintList
+  //       uint l = 0;  // index of uint8List
 
-        for (uint i = 1; i < specs.length; i++) {
-          Data.Order memory order = Data.Order(
-              addressList[j++],  // owner
-              addressList[j++],  // tokenS
-              0x0, // tokenB not known yet,
-              uintList[k++],     // amountS
-              uintList[k++],     // amountB
-              uintList[k++],     // lrcFee
-              // optional
-              specs[i].hasAuthAddr() ? addressList[j++] : 0x0,
-              specs[i].hasBroker() ? addressList[j++] : 0x0,
-              specs[i].hasBrokerInterceptor() ? addressList[j++] : 0x0,
-              specs[i].hasWallet() ? addressList[j++] : 0x0,
-              specs[i].hasValidSince() ? uintList[k++] : 0,
-              specs[i].hasValidUntil() ? uintList[k++] : 0,
-              specs[i].capByAmountB(),
-              specs[i].allOrNone(),
-              specs[i].hasSignature() ? bytesList[l++] : new bytes(0)
-          );
+  //       for (uint i = 1; i < specs.length; i++) {
+  //         Data.Order memory order = Data.Order(
+  //             addressList[j++],  // owner
+  //             addressList[j++],  // tokenS
+  //             0x0, // tokenB not known yet,
+  //             uintList[k++],     // amountS
+  //             uintList[k++],     // amountB
+  //             uintList[k++],     // lrcFee
+  //             // optional
+  //             specs[i].hasAuthAddr() ? addressList[j++] : 0x0,
+  //             specs[i].hasBroker() ? addressList[j++] : 0x0,
+  //             specs[i].hasBrokerInterceptor() ? addressList[j++] : 0x0,
+  //             specs[i].hasWallet() ? addressList[j++] : 0x0,
+  //             specs[i].hasValidSince() ? uintList[k++] : 0,
+  //             specs[i].hasValidUntil() ? uintList[k++] : 0,
+  //             specs[i].capByAmountB(),
+  //             specs[i].allOrNone(),
+  //             specs[i].hasSignature() ? bytesList[l++] : new bytes(0)
+  //         );
 
-          // bit-0 = 1 iff this order is the last order of a deck.
-          if (specs[i].isLastInDeck()) {
-              // not the last order of the deck;
-          }
-        }
+  //         // bit-0 = 1 iff this order is the last order of a deck.
+  //         if (specs[i].isLastInDeck()) {
+  //             // not the last order of the deck;
+  //         }
+  //       }
 
-    }
+  //   }
 }
