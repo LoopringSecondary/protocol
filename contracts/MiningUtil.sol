@@ -24,55 +24,44 @@ import "./lib/MultihashUtil.sol";
 
 /// @title An Implementation of IOrderbook.
 /// @author Daniel Wang - <daniel@loopring.org>.
-library OrderUtil {
-    function getHash(Data.Order order)
-        public
-        pure
-        returns (bytes32)
-    {
-        return 0x0;
-    }
+library MiningUtil {
 
-    function checkBroker(
-        Data.Order order,
+    function checkMiner(
+        Data.Mining mining,
         Data.Context ctx
         )
         public
         view
+        returns (bytes32)
     {
-        if (order.broker == address(0x0)) {
-            order.broker = order.owner;
+        if (mining.miner == 0x0) {
+            mining.miner = mining.feeRecipient;
         } else {
             bool registered;
-            (registered, order.brokerInterceptor) = ctx.orderBrokerRegistry.getBroker(
-                order.owner,
-                order.broker
+            (registered, mining.interceptor) = ctx.minerBrokerRegistry.getBroker(
+                mining.feeRecipient,
+                mining.miner
             );
-             require(registered, "broker unregistered");
+            require(registered, "miner unregistered");
         }
     }
 
     function checkSignature(
-        Data.Order order,
+        Data.Mining mining,
         Data.Context ctx
         )
         public
         view
     {
-        if (order.sig.length == 0) {
-            require(
-                ctx.orderRegistry.isOrderHashRegistered(
-                    order.broker,
-                    order.hash
-                ),
-                "order unauthorized"
-            );
+        if (mining.sig.length == 0) {
+            require(tx.origin == mining.miner);
         } else {
             MultihashUtil.verifySignature(
-                order.broker,
-                order.hash,
-                order.sig
+                mining.miner,
+                mining.hash,
+                mining.sig
             );
         }
     }
+
 }

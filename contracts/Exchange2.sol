@@ -30,10 +30,15 @@ import "./IExchange.sol";
 import "./IOrderRegistry.sol";
 import "./ITokenRegistry.sol";
 import "./ITradeDelegate.sol";
+import "./IMinerRegistry.sol";
 import "./Data.sol";
 import "./OrderUtil.sol";
 import "./OrderSpecs.sol";
+import "./RingUtil.sol";
 import "./RingSpecs.sol";
+import "./MiningSpec.sol";
+import "./MiningUtil.sol";
+import "./InputsUtil.sol";
 
 
 /// @title An Implementation of IExchange.
@@ -49,15 +54,21 @@ import "./RingSpecs.sol";
 contract Exchange is IExchange, NoDefaultFunc {
     using AddressUtil   for address;
     using MathUint      for uint;
+    using MiningSpec    for uint16;
     using OrderSpecs    for uint16[];
     using RingSpecs     for uint8[][];
-    using OrderUtil    for Data.Order;
+    using OrderUtil     for Data.Order;
+    using RingUtil      for Data.Ring;
+    using InputsUtil    for Data.Inputs;
+    using MiningUtil    for Data.Mining;
 
     address public  lrcTokenAddress             = 0x0;
     address public  tokenRegistryAddress        = 0x0;
     address public  delegateAddress             = 0x0;
-    address public  brokerRegistryAddress       = 0x0;
+    address public  orderBrokerRegistryAddress  = 0x0;
+    address public  minerBrokerRegistryAddress  = 0x0;
     address public  orderRegistryAddress        = 0x0;
+    address public  minerRegistryAddress        = 0x0;
 
     uint64  public  ringIndex                   = 0;
 
@@ -77,6 +88,7 @@ contract Exchange is IExchange, NoDefaultFunc {
     uint    public constant RATE_RATIO_SCALE    = 10000;
 
     function submitRings(
+        uint16 miningSpec,
         uint16[] orderSpecs,
         uint8[][] ringSpecs,
         address[] addressLists,
@@ -88,16 +100,30 @@ contract Exchange is IExchange, NoDefaultFunc {
         Data.Context memory ctx = Data.Context(
             ITokenRegistry(tokenRegistryAddress),
             ITradeDelegate(delegateAddress),
-            IBrokerRegistry(brokerRegistryAddress),
-            IOrderRegistry(orderRegistryAddress)
+            IBrokerRegistry(orderBrokerRegistryAddress),
+            IBrokerRegistry(minerBrokerRegistryAddress),
+            IOrderRegistry(orderRegistryAddress),
+            IMinerRegistry(minerRegistryAddress)
         );
 
         Data.Inputs memory inputs = Data.Inputs(
             addressLists,
             uintList,
             bytesList,
-            0, 0, 0
+            0, 0, 0  // current indices of addressLists, uintList, and bytesList.
         );
+
+        Data.Mining memory mining = Data.Mining(
+            inputs.nextAddress(),
+            miningSpec.hasMiner() ? inputs.nextAddress() : 0x0,
+            miningSpec.hasBroker() ? inputs.nextAddress() : 0x0,
+            miningSpec.hasMinerInterceptor() ? inputs.nextAddress() : 0x0,
+            miningSpec.hasSignature() ? inputs.nextBytes() : new bytes(0),
+            bytes32(0x0)
+        );
+
+        mining.checkMiner(ctx);
+
         Data.Order[] memory orders = orderSpecs.assembleOrders(inputs);
         Data.Ring[] memory rings = ringSpecs.assembleRings(orders, inputs);
 
@@ -106,5 +132,12 @@ contract Exchange is IExchange, NoDefaultFunc {
             orders[i].checkBroker(ctx);
             orders[i].checkSignature(ctx);
         }
+
+        for (uint i = 0; i < rings.length; i++) {
+            rings[i].hash = rings[i].getHash();
+            mining.hash ^= rings[i].hash;
+        }
+
+        mining.checkSignature(ctx);
     }
 }

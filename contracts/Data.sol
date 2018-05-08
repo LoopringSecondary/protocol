@@ -23,6 +23,7 @@ import "./IBrokerRegistry.sol";
 import "./IOrderRegistry.sol";
 import "./ITokenRegistry.sol";
 import "./ITradeDelegate.sol";
+import "./IMinerRegistry.sol";
 
 library Data {
 
@@ -38,19 +39,22 @@ library Data {
     struct Context {
         ITokenRegistry  tokenRegistry;
         ITradeDelegate  delegate;
-        IBrokerRegistry brokerRegistry;
+        IBrokerRegistry orderBrokerRegistry;
+        IBrokerRegistry minerBrokerRegistry;
         IOrderRegistry  orderRegistry;
+        IMinerRegistry  minerRegistry;
     }
 
-    struct MiningParam {
+    struct Mining {
         // required fields
         address feeRecipient;
-        address miner;
 
         // optional fields
+        address miner;
         address broker;
         address interceptor;
-        address sig;
+        bytes   sig;
+        bytes32 hash;
     }
 
     struct Order {
@@ -102,5 +106,7 @@ library Data {
     struct Ring{
         uint size;
         Participation[] participations;
+        bytes[] sigs;
+        bytes32 hash;
     }
 }

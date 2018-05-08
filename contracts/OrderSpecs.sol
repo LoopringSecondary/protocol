@@ -67,7 +67,7 @@ library OrderSpecs {
             spec.capByAmountB(),
             spec.allOrNone(),
             bytes32(0x0), // hash
-            address(0x0), // brokerInterceptor
+            address(0x0), // orderBrokerInterceptor
             0,  // spendableS
             0,  // spendableLRC
             0,  // filledAmount

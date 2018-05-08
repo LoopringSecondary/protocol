@@ -76,6 +76,16 @@ library RingSpecs {
 
         parts[0].order.tokenB = prevTokenS;
 
-        return Data.Ring(size, parts);
+        bytes[] memory sigs = new bytes[](size);
+        for (uint i = 0; i < size; i++) {
+            sigs[i] = inputs.nextBytes();
+        }
+
+        return Data.Ring(
+          size,
+          parts,
+          sigs,
+          bytes32(0x0) // hash
+        );
     }
 }
