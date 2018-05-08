@@ -22,6 +22,16 @@ pragma experimental "ABIEncoderV2";
 /// @title An Implementation of IOrderbook.
 /// @author Daniel Wang - <daniel@loopring.org>.
 library Data {
+    struct MiningParam {
+        // required fields
+        address feeRecipient;
+        address miner;
+
+        // optional fields
+        address broker;
+        address interceptor;
+        address sig;
+    }
 
     struct Order {
         // required fields
@@ -35,34 +45,26 @@ library Data {
         // optional fields
         address authAddr;
         address broker;
-        address interceptor;
+        address orderInterceptor;
         address wallet;
         uint    validSince;
         uint    validUntil;
-        bool    optCapByAmountB;
-        bool    allOrNone;
         bytes   sig;
+        bool    capByAmountB;
+        bool    allOrNone;
 
         // computed fields
         bytes32 orderHash;
+        address brokerInterceptor;
     }
 
-    struct MiningParam {
+    struct Participation {
         // required fields
-        address feeRecipient;
-        address miner;
-
-        // optional fields
-        address broker;
-        address interceptor;
-        address sig;
-    }
-
-    struct State {
-        // required fields
+        uint orderIndex;
         bool marginSplitAsFee;
         uint rateS;
         uint rateB;
+
         // computed fields
         uint splitS;
         uint splitB;
@@ -71,8 +73,6 @@ library Data {
         uint fillAmountS;
     }
 
-
-    struct Participation{uint x;}
     struct Ring{
         Participation[] participations;
     }

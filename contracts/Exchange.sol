@@ -24,13 +24,14 @@ import "./lib/ERC20.sol";
 import "./lib/MathUint.sol";
 import "./lib/MultihashUtil.sol";
 import "./lib/NoDefaultFunc.sol";
-import "./Data.sol";
+import "./utils/Data.sol";
+import "./utils/OrderSpec.sol";
+import "./utils/OrderUtil.sol";
 import "./IBrokerRegistry.sol";
 import "./IBrokerInterceptor.sol";
 import "./IExchange.sol";
 import "./ITokenRegistry.sol";
 import "./ITradeDelegate.sol";
-import "./RingAssembler.sol";
 
 
 /// @title An Implementation of IExchange.
@@ -43,9 +44,11 @@ import "./RingAssembler.sol";
 ///     https://github.com/BenjaminPrice
 ///     https://github.com/jonasshen
 ///     https://github.com/Hephyrius
-contract Exchange is IExchange, RingAssembler, NoDefaultFunc {
+contract Exchange is IExchange, NoDefaultFunc {
     using AddressUtil   for address;
     using MathUint      for uint;
+    using OrderSpec     for uint16;
+    using OrderUtil     for Data.Order;
 
     address public  lrcTokenAddress             = 0x0;
     address public  tokenRegistryAddress        = 0x0;
@@ -231,7 +234,7 @@ contract Exchange is IExchange, RingAssembler, NoDefaultFunc {
         uint numRings;
 
         Data.Order[] orders;
-        Data.Ring[] rings;
+        Data.Ring[]  rings;
     }
 
     function submitRings(
@@ -243,7 +246,7 @@ contract Exchange is IExchange, RingAssembler, NoDefaultFunc {
         )
         public
     {
-        NewContext memory context = NewContext(
+        NewContext memory ctx = NewContext(
             orderSpecs,
             ringSpecs,
             addressList,
@@ -255,20 +258,45 @@ contract Exchange is IExchange, RingAssembler, NoDefaultFunc {
             new Data.Ring[](ringSpecs.length)
         );
 
-        buildOrders(context);
-        buildRings(context);
+        assembleOrders(ctx);
+        assembleRings(ctx);
     }
 
-    function buildOrders(
-        NewContext context
+    function assembleOrders(
+        NewContext ctx
         )
         internal
     {
-
+        uint j = 0; // index of addressList
+        uint k = 0; // index of uintList
+        uint l = 0; // index of bytesList
+        for (uint i = 0; i < ctx.numOrders; i++) {
+            uint16 spec = ctx.orderSpecs[i];
+            ctx.orders[i] = Data.Order(
+                ctx.addressList[j++],  // owner
+                ctx.addressList[j++],  // amountS
+                0x0, // tokenB need to be filled with the previous order's tokenS;
+                ctx.uintList[k++], // amountS
+                ctx.uintList[k++], // amountB
+                ctx.uintList[k++], // lrcFee
+                spec.hasAuthAddr() ? ctx.addressList[j++] : 0x0, // authAddr
+                spec.hasBroker() ? ctx.addressList[j++] : 0x0, // broker
+                spec.hasOrderInterceptor() ? ctx.addressList[j++] : 0x0, // interceptor
+                spec.hasWallet() ? ctx.addressList[j++] : 0x0, // wallet
+                spec.hasValidSince() ? ctx.uintList[k++]: 0, // validSince
+                spec.hasValidUntil() ? ctx.uintList[k++]: uint(0) - 1, // validUntil
+                spec.hasSignature() ? ctx.bytesList[l++] : new bytes(0), // sig
+                spec.capByAmountB(),
+                spec.allOrNone(),
+                bytes32(0x0), // orderHash
+                address(0x0)  // brokerInterceptor
+            );
+            ctx.orders[i].orderHash = ctx.orders[i].hash();
+        }
     }
 
-    function buildRings(
-        NewContext context
+    function assembleRings(
+        NewContext ctx
         )
         internal
     {

@@ -18,20 +18,18 @@ pragma solidity 0.4.23;
 pragma experimental "v0.5.0";
 pragma experimental "ABIEncoderV2";
 
-import "./lib/NoDefaultFunc.sol";
-import "./utils/Data.sol";
-import "./IOrderBook.sol";
+import "./Data.sol";
 
-
-/// @title An Implementation of IOrderbook.
+/// @title OrderUtil
 /// @author Daniel Wang - <daniel@loopring.org>.
-contract OrderBook is IOrderBook, NoDefaultFunc {
 
-    function submitOrder(
-      address owner
-    )
-    external
+library OrderUtil {
+
+    function hash(Data.Order order)
+        public
+        pure
+        returns (bytes32 )
     {
-
+        return bytes32(0x0);
     }
 }
