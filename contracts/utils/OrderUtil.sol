@@ -60,18 +60,23 @@ library OrderUtil {
 
     function scale(
         Data.Order order,
-        ITradeDelegate delegate
+        ITradeDelegate delegate,
+        uint newlySpentAmountS,
+        uint newlyFilledAmount
         )
         public
     {
+        order.spendableS = order.spendableS.sub(newlySpentAmountS);
+        order.filledAmount = order.filledAmount.add(newlyFilledAmount);
+
         if (order.capByAmountB) {
             order.actualAmountB = order.amountB.tolerantSub(order.filledAmount);
             order.actualAmountS = order.amountS.mul(order.actualAmountB) / order.amountB;
-            order.actualLRCFee  = order.lrcFee.mul(order.actualAmountB) / order.amountB;
+            order.actualLRCFee  =  order.lrcFee.mul(order.actualAmountB) / order.amountB;
         } else {
             order.actualAmountS = order.amountS.tolerantSub(order.filledAmount);
             order.actualAmountB = order.amountB.mul(order.actualAmountS) / order.amountS;
-            order.actualLRCFee  = order.lrcFee.mul(order.actualAmountS) / order.amountS;
+            order.actualLRCFee  =  order.lrcFee.mul(order.actualAmountS) / order.amountS;
         }
 
         if (order.spendableS < order.actualAmountS) {

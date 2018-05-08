@@ -306,7 +306,7 @@ contract Exchange is IExchange, NoDefaultFunc {
             ctx.orders[i].spendableS = ctx.orders[i].getSpendable(ctx.delegate, ctx.orders[i].tokenS);
             ctx.orders[i].spendableLRC = ctx.orders[i].getSpendable(ctx.delegate, lrcTokenAddress);
             ctx.orders[i].filledAmount = ctx.orders[i].getFilledAmount(ctx.delegate);
-            ctx.orders[i].scale(ctx.delegate);
+            ctx.orders[i].scale(ctx.delegate, 0, 0);
         }
     }
 
