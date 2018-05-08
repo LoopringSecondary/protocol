@@ -99,17 +99,16 @@ library Data {
         uint rateB;
 
         // computed fields
-        // uint splitS;
-        // uint splitB;
-        // uint lrcFee;
-        // uint lrcReward;
-        // uint fillAmountS;
+        uint splitS;
+        uint splitB;
+        uint lrcFee;
+        uint lrcReward;
+        uint fillAmountS;
     }
 
     struct Ring{
         uint size;
         Participation[] participations;
-        bytes[] sigs;
         bytes32 hash;
     }
 }

@@ -33,25 +33,4 @@ library RingUtil {
             ring.hash ^= ring.participations[i].order.hash;
         }
     }
-
-    function checkSignature(Data.Ring ring, Data.Context ctx)
-        public
-        view
-    {
-        // if (order.sig.length == 0) {
-        //     require(
-        //         ctx.orderRegistry.isOrderHashRegistered(
-        //             order.broker,
-        //             order.hash
-        //         ),
-        //         "order unauthorized"
-        //     );
-        // } else {
-        //     MultihashUtil.verifySignature(
-        //         order.broker,
-        //         order.hash,
-        //         order.sig
-        //     );
-        // }
-    }
 }

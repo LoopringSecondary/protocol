@@ -149,5 +149,9 @@ contract Exchange is IExchange, NoDefaultFunc {
             orders[i].adjust(ctx, 0, 0, 0);
             orders[i].scale(ctx);
         }
+
+        for (uint i = 0; i < rings.length; i++){
+            Data.Ring memory ring = rings[i];
+        }
     }
 }

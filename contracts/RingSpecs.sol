@@ -67,7 +67,12 @@ library RingSpecs {
                 orders[pspec.orderIndex()],
                 pspec.marginSplitAsFee(),
                 inputs.nextUint(),
-                inputs.nextUint()
+                inputs.nextUint(),
+                0, // splitS
+                0, // splitB
+                0, // lrcFee
+                0, // lrcReward
+                0  // fillAmountS
             );
 
             parts[i].order.tokenB = prevTokenS;
@@ -76,15 +81,9 @@ library RingSpecs {
 
         parts[0].order.tokenB = prevTokenS;
 
-        bytes[] memory sigs = new bytes[](size);
-        for (uint i = 0; i < size; i++) {
-            sigs[i] = inputs.nextBytes();
-        }
-
         return Data.Ring(
           size,
           parts,
-          sigs,
           bytes32(0x0) // hash
         );
     }
