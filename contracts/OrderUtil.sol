@@ -20,11 +20,17 @@ pragma experimental "ABIEncoderV2";
 
 
 import "./Data.sol";
+import "./lib/ERC20.sol";
+import "./lib/MathUint.sol";
 import "./lib/MultihashUtil.sol";
+import "./IBrokerInterceptor.sol";
 
 /// @title An Implementation of IOrderbook.
 /// @author Daniel Wang - <daniel@loopring.org>.
 library OrderUtil {
+
+    using MathUint      for uint;
+
     function updateHash(Data.Order order)
         public
         pure
@@ -47,6 +53,77 @@ library OrderUtil {
                 order.broker
             );
              require(registered, "broker unregistered");
+        }
+    }
+
+    function updateStates(
+        Data.Order order,
+        Data.Context ctx
+        )
+        public
+        view
+    {
+        order.spendableS =  getSpendable(
+            ctx.delegate,
+            order.tokenS,
+            order.owner,
+            order.broker,
+            order.brokerInterceptor
+        );
+
+        order.spendableLRC =  getSpendable(
+            ctx.delegate,
+            ctx.lrcTokenAddress,
+            order.owner,
+            order.broker,
+            order.brokerInterceptor
+        );
+
+        order.filledAmount = ctx.delegate.filled(order.hash);
+    }
+
+    function adjust(
+        Data.Order order,
+        Data.Context ctx,
+        uint spendableDelta,
+        uint spendableLRCDelta,
+        uint filledAmountDelta
+        )
+        public
+        view
+    {
+        order.spendableS = order.spendableS.sub(spendableDelta);
+        order.spendableLRC = order.spendableLRC.sub(spendableLRCDelta);
+        order.filledAmount = order.filledAmount.add(filledAmountDelta);
+
+        if (order.capByAmountB) {
+            order.actualAmountB = order.amountB.tolerantSub(order.filledAmount);
+            order.actualAmountS = order.amountS.mul(order.actualAmountB) / order.amountB;
+            if (order.actualAmountS > order.spendableS) {
+                order.actualAmountS = order.spendableS;
+                order.actualAmountB = order.amountB.mul(order.actualAmountS) / order.amountS;
+            }
+        } else {
+            order.actualAmountS = order.amountS.tolerantSub(order.filledAmount);
+            if (order.actualAmountS > order.spendableS) {
+                order.actualAmountS = order.spendableS;
+            }
+        }
+    }
+
+    function scale(
+        Data.Order order,
+        Data.Context ctx
+        )
+        public
+        view
+    {
+        if (order.capByAmountB) {
+            order.actualAmountS = order.amountS.mul(order.actualAmountB) / order.amountB;
+            order.actualLRCFee  =  order.lrcFee.mul(order.actualAmountB) / order.amountB;
+        } else {
+            order.actualAmountB = order.amountB.mul(order.actualAmountS) / order.amountS;
+            order.actualLRCFee  =  order.lrcFee.mul(order.actualAmountS) / order.amountS;
         }
     }
 
@@ -87,6 +164,46 @@ library OrderUtil {
                 miningHash,
                 order.dualAuthSig
             );
+        }
+    }
+
+       /// @return Amount of ERC20 token that can be spent by this contract.
+    function getSpendable(
+        ITradeDelegate delegate,
+        address tokenAddress,
+        address tokenOwner,
+        address broker,
+        address brokerInterceptor
+        )
+        private
+        view
+        returns (uint spendable)
+    {
+        ERC20 token = ERC20(tokenAddress);
+        spendable = token.allowance(
+            tokenOwner,
+            address(delegate)
+        );
+        if (spendable == 0) {
+            return;
+        }
+        uint amount = token.balanceOf(tokenOwner);
+        if (amount < spendable) {
+            spendable = amount;
+            if (spendable == 0) {
+                return;
+            }
+        }
+
+        if (brokerInterceptor != tokenOwner) {
+            amount = IBrokerInterceptor(brokerInterceptor).getAllowance(
+                tokenOwner,
+                broker,
+                tokenAddress
+            );
+            if (amount < spendable) {
+                spendable = amount;
+            }
         }
     }
 }

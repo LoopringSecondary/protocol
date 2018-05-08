@@ -290,6 +290,17 @@ contract TradeDelegate is ITradeDelegate, Claimable, NoDefaultFunc {
         filled[orderHash] = filled[orderHash].add(amount);
     }
 
+    function setFilled(
+        bytes32 orderHash,
+        uint    amount
+        )
+        onlyAuthorized
+        notSuspended
+        external
+    {
+        filled[orderHash] = amount;
+    }
+
 
     function setCutoffs(
         address owner,

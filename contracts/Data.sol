@@ -37,6 +37,7 @@ library Data {
     }
 
     struct Context {
+        address lrcTokenAddress;
         ITokenRegistry  tokenRegistry;
         ITradeDelegate  delegate;
         IBrokerRegistry orderBrokerRegistry;

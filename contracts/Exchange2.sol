@@ -98,6 +98,7 @@ contract Exchange is IExchange, NoDefaultFunc {
         public
     {
         Data.Context memory ctx = Data.Context(
+            lrcTokenAddress,
             ITokenRegistry(tokenRegistryAddress),
             ITradeDelegate(delegateAddress),
             IBrokerRegistry(orderBrokerRegistryAddress),
@@ -115,7 +116,7 @@ contract Exchange is IExchange, NoDefaultFunc {
 
         Data.Mining memory mining = Data.Mining(
             inputs.nextAddress(),
-            miningSpec.hasMiner() ? inputs.nextAddress() : 0x0,
+            miningSpec.hasMiner() ? inputs.nextAddress() : address(0x0),
             miningSpec.hasSignature() ? inputs.nextBytes() : new bytes(0),
             bytes32(0x0), // hash
             address(0x0)  // interceptor
@@ -141,6 +142,12 @@ contract Exchange is IExchange, NoDefaultFunc {
 
         for (uint i = 0; i < orders.length; i++) {
             orders[i].checkDualAuthSignature(mining.hash);
+        }
+
+        for (uint i = 0; i < orders.length; i++) {
+            orders[i].updateStates(ctx);
+            orders[i].adjust(ctx, 0, 0, 0);
+            orders[i].scale(ctx);
         }
     }
 }
