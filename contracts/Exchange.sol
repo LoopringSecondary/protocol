@@ -291,7 +291,7 @@ contract Exchange is IExchange, NoDefaultFunc {
                 bytes32(0x0), // orderHash
                 address(0x0)  // brokerInterceptor
             );
-            ctx.orders[i].orderHash = ctx.orders[i].hash();
+            ctx.orders[i].hash = ctx.orders[i].getHash();
         }
     }
 

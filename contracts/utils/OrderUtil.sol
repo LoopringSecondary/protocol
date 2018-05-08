@@ -25,7 +25,7 @@ import "./Data.sol";
 
 library OrderUtil {
 
-    function hash(Data.Order order)
+    function getHash(Data.Order order)
         public
         pure
         returns (bytes32 )

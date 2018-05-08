@@ -54,8 +54,10 @@ library Data {
         bool    allOrNone;
 
         // computed fields
-        bytes32 orderHash;
+        bytes32 hash;
         address brokerInterceptor;
+        // uint    spendableS;
+        // uint    spendableLRC;
     }
 
     struct Participation {
