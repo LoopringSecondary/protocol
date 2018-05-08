@@ -233,6 +233,10 @@ contract Exchange is IExchange, NoDefaultFunc {
         uint[]      uintList;
         bytes[]     bytesList;
 
+        uint j; // index of addressList
+        uint k; // index of uintList
+        uint l; // index of bytesList
+
         uint numOrders;
         uint numRings;
 
@@ -257,6 +261,7 @@ contract Exchange is IExchange, NoDefaultFunc {
             addressList,
             uintList,
             bytesList,
+            0, 0, 0,
             orderSpecs.length,
             ringSpecs.length,
             new Data.Order[](orderSpecs.length),
@@ -272,25 +277,22 @@ contract Exchange is IExchange, NoDefaultFunc {
         )
         internal
     {
-        uint j = 0; // index of addressList
-        uint k = 0; // index of uintList
-        uint l = 0; // index of bytesList
         for (uint i = 0; i < ctx.numOrders; i++) {
             uint16 spec = ctx.orderSpecs[i];
             ctx.orders[i] = Data.Order(
-                ctx.addressList[j++],  // owner
-                ctx.addressList[j++],  // amountS
+                ctx.addressList[ctx.j++],  // owner
+                ctx.addressList[ctx.j++],  // amountS
                 0x0, // tokenB need to be filled with the previous order's tokenS;
-                ctx.uintList[k++], // amountS
-                ctx.uintList[k++], // amountB
-                ctx.uintList[k++], // lrcFee
-                spec.hasAuthAddr() ? ctx.addressList[j++] : 0x0, // authAddr
-                spec.hasBroker() ? ctx.addressList[j++] : 0x0, // broker
-                spec.hasOrderInterceptor() ? ctx.addressList[j++] : 0x0, // interceptor
-                spec.hasWallet() ? ctx.addressList[j++] : 0x0, // wallet
-                spec.hasValidSince() ? ctx.uintList[k++]: 0, // validSince
-                spec.hasValidUntil() ? ctx.uintList[k++]: uint(0) - 1, // validUntil
-                spec.hasSignature() ? ctx.bytesList[l++] : new bytes(0), // sig
+                ctx.uintList[ctx.k++], // amountS
+                ctx.uintList[ctx.k++], // amountB
+                ctx.uintList[ctx.k++], // lrcFee
+                spec.hasAuthAddr() ? ctx.addressList[ctx.j++] : 0x0, // authAddr
+                spec.hasBroker() ? ctx.addressList[ctx.j++] : 0x0, // broker
+                spec.hasOrderInterceptor() ? ctx.addressList[ctx.j++] : 0x0, // interceptor
+                spec.hasWallet() ? ctx.addressList[ctx.j++] : 0x0, // wallet
+                spec.hasValidSince() ? ctx.uintList[ctx.k++]: 0, // validSince
+                spec.hasValidUntil() ? ctx.uintList[ctx.k++]: uint(0) - 1, // validUntil
+                spec.hasSignature() ? ctx.bytesList[ctx.l++] : new bytes(0), // sig
                 spec.capByAmountB(),
                 spec.allOrNone(),
                 bytes32(0x0), // orderHash
@@ -302,11 +304,21 @@ contract Exchange is IExchange, NoDefaultFunc {
                 0, // actualAmountB,
                 0  // actualLRCFee
             );
-            ctx.orders[i].hash = ctx.orders[i].getHash();
-            ctx.orders[i].spendableS = ctx.orders[i].getSpendable(ctx.delegate, ctx.orders[i].tokenS);
-            ctx.orders[i].spendableLRC = ctx.orders[i].getSpendable(ctx.delegate, lrcTokenAddress);
-            ctx.orders[i].filledAmount = ctx.orders[i].getFilledAmount(ctx.delegate);
-            ctx.orders[i].scale(ctx.delegate, 0, 0);
+        }
+    }
+
+    function updateOrders(
+        NewContext ctx
+        )
+        internal
+    {
+        for (uint i = 0; i < ctx.numOrders; i++) {
+            Data.Order memory order = ctx.orders[i];
+            order.hash = order.getHash();
+            order.spendableS = order.getSpendable(ctx.delegate, order.tokenS);
+            order.spendableLRC = order.getSpendable(ctx.delegate, lrcTokenAddress);
+            order.filledAmount = order.getFilledAmount(ctx.delegate);
+            order.scaleBasedOnSpendableAndHistory(ctx.delegate, 0, 0);
         }
     }
 
@@ -315,6 +327,20 @@ contract Exchange is IExchange, NoDefaultFunc {
         )
         internal
     {
+        for (uint i = 0; i < ctx.numRings; i++) {
+            uint8[] memory spec = ctx.ringSpecs[i];
+            Data.Participation[] memory parts = new Data.Participation[](spec.length);
+
+            for (uint j = 0; j < spec.length; j++) {
+                parts[j] = Data.Participation(
+                    spec[j],
+                    ctx.uintList[ctx.k++],
+                    ctx.uintList[ctx.k++]
+                );
+            }
+
+            ctx.rings[i] = Data.Ring(parts);
+        }
 
     }
 

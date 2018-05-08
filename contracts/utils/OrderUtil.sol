@@ -58,7 +58,7 @@ library OrderUtil {
         return 0;
     }
 
-    function scale(
+    function scaleBasedOnSpendableAndHistory(
         Data.Order order,
         ITradeDelegate delegate,
         uint newlySpentAmountS,
