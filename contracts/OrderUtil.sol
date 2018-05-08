@@ -75,4 +75,20 @@ library OrderUtil {
             );
         }
     }
+
+    function checkDualAuthSignature(
+        Data.Order order,
+        bytes32  miningHash
+        )
+        public
+        view
+    {
+        if (order.dualAuthSig.length != 0) {
+            MultihashUtil.verifySignature(
+                order.dualAuthAddr,
+                miningHash,
+                order.dualAuthSig
+            );
+        }
+    }
 }

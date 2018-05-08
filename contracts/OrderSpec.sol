@@ -40,7 +40,7 @@ library OrderSpec {
         return spec & 0x4 != 0;
     }
 
-    function hasAuthAddress(uint16 spec)
+    function hasDualAuth(uint16 spec)
         public
         pure
         returns (bool)

@@ -138,5 +138,9 @@ contract Exchange is IExchange, NoDefaultFunc {
         }
         assert(mining.hash != 0x0);
         mining.checkSignature(ctx);
+
+        for (uint i = 0; i < orders.length; i++) {
+            orders[i].checkDualAuthSignature(mining.hash);
+        }
     }
 }
