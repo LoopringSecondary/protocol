@@ -53,6 +53,12 @@ library MiningUtil {
         public
         view
     {
+        mining.hash = keccak256(
+            mining.feeRecipient,
+            mining.miner,
+            mining.hash
+        );
+
         if (mining.sig.length == 0) {
             require(tx.origin == mining.miner);
         } else {

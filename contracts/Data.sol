@@ -51,10 +51,11 @@ library Data {
 
         // optional fields
         address miner;
-        address broker;
-        address interceptor;
         bytes   sig;
+
+        // computed fields
         bytes32 hash;
+        address interceptor;
     }
 
     struct Order {

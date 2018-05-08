@@ -116,10 +116,9 @@ contract Exchange is IExchange, NoDefaultFunc {
         Data.Mining memory mining = Data.Mining(
             inputs.nextAddress(),
             miningSpec.hasMiner() ? inputs.nextAddress() : 0x0,
-            miningSpec.hasBroker() ? inputs.nextAddress() : 0x0,
-            miningSpec.hasMinerInterceptor() ? inputs.nextAddress() : 0x0,
             miningSpec.hasSignature() ? inputs.nextBytes() : new bytes(0),
-            bytes32(0x0)
+            bytes32(0x0), // hash
+            address(0x0)  // interceptor
         );
 
         mining.checkMiner(ctx);
@@ -137,7 +136,7 @@ contract Exchange is IExchange, NoDefaultFunc {
             rings[i].hash = rings[i].getHash();
             mining.hash ^= rings[i].hash;
         }
-
+        assert(mining.hash != 0x0);
         mining.checkSignature(ctx);
     }
 }
