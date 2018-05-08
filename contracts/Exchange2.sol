@@ -121,23 +121,23 @@ contract Exchange is IExchange, NoDefaultFunc {
             address(0x0)  // interceptor
         );
 
-        mining.checkMiner(ctx);
-
         Data.Order[] memory orders = orderSpecs.assembleOrders(inputs);
         Data.Ring[] memory rings = ringSpecs.assembleRings(orders, inputs);
 
         for (uint i = 0; i < orders.length; i++) {
-            orders[i].hash = orders[i].getHash();
-            orders[i].checkBroker(ctx);
-            orders[i].checkSignature(ctx);
+            orders[i].updateHash();
+            orders[i].updateBrokerAndInterceptor(ctx);
+            orders[i].checkBrokerSignature(ctx);
         }
 
         for (uint i = 0; i < rings.length; i++) {
-            rings[i].hash = rings[i].getHash();
+            rings[i].updateHash();
             mining.hash ^= rings[i].hash;
         }
-        assert(mining.hash != 0x0);
-        mining.checkSignature(ctx);
+
+        mining.updateHash();
+        mining.updateMinerAndInterceptor(ctx);
+        mining.checkMinerSignature(ctx);
 
         for (uint i = 0; i < orders.length; i++) {
             orders[i].checkDualAuthSignature(mining.hash);

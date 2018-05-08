@@ -25,13 +25,12 @@ import "./lib/MultihashUtil.sol";
 /// @title An Implementation of IOrderbook.
 /// @author Daniel Wang - <daniel@loopring.org>.
 library RingUtil {
-    function getHash(Data.Ring ring)
+    function updateHash(Data.Ring ring)
         public
         pure
-        returns (bytes32 hash)
     {
         for (uint i = 0; i < ring.size; i++) {
-            hash ^= ring.participations[i].order.hash;
+            ring.hash ^= ring.participations[i].order.hash;
         }
     }
 

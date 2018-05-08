@@ -25,15 +25,13 @@ import "./lib/MultihashUtil.sol";
 /// @title An Implementation of IOrderbook.
 /// @author Daniel Wang - <daniel@loopring.org>.
 library OrderUtil {
-    function getHash(Data.Order order)
+    function updateHash(Data.Order order)
         public
         pure
-        returns (bytes32)
     {
-        return 0x0;
     }
 
-    function checkBroker(
+    function updateBrokerAndInterceptor(
         Data.Order order,
         Data.Context ctx
         )
@@ -52,7 +50,7 @@ library OrderUtil {
         }
     }
 
-    function checkSignature(
+    function checkBrokerSignature(
         Data.Order order,
         Data.Context ctx
         )

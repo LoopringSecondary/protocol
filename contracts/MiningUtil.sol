@@ -26,7 +26,7 @@ import "./lib/MultihashUtil.sol";
 /// @author Daniel Wang - <daniel@loopring.org>.
 library MiningUtil {
 
-    function checkMiner(
+    function updateMinerAndInterceptor(
         Data.Mining mining,
         Data.Context ctx
         )
@@ -46,9 +46,8 @@ library MiningUtil {
         }
     }
 
-    function checkSignature(
-        Data.Mining mining,
-        Data.Context ctx
+    function updateHash(
+        Data.Mining mining
         )
         public
         view
@@ -58,7 +57,14 @@ library MiningUtil {
             mining.miner,
             mining.hash
         );
-
+    }
+    function checkMinerSignature(
+        Data.Mining mining,
+        Data.Context ctx
+        )
+        public
+        view
+    {
         if (mining.sig.length == 0) {
             require(tx.origin == mining.miner);
         } else {
