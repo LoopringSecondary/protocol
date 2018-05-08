@@ -56,8 +56,12 @@ library Data {
         // computed fields
         bytes32 hash;
         address brokerInterceptor;
-        // uint    spendableS;
-        // uint    spendableLRC;
+        uint    spendableS;
+        uint    spendableLRC;
+        uint    filledAmount;
+        uint    actualAmountS;
+        uint    actualAmountB;
+        uint    actualLRCFee;
     }
 
     struct Participation {

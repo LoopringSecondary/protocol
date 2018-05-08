@@ -224,6 +224,9 @@ contract Exchange is IExchange, NoDefaultFunc {
     }
 
     struct NewContext {
+        ITradeDelegate         delegate;
+        IBrokerRegistry        brokerRegistry;
+
         uint16[]    orderSpecs;
         uint8[][]   ringSpecs;
         address[]   addressList;
@@ -247,6 +250,8 @@ contract Exchange is IExchange, NoDefaultFunc {
         public
     {
         NewContext memory ctx = NewContext(
+            ITradeDelegate(delegateAddress),
+            IBrokerRegistry(brokerRegistryAddress),
             orderSpecs,
             ringSpecs,
             addressList,
@@ -289,9 +294,19 @@ contract Exchange is IExchange, NoDefaultFunc {
                 spec.capByAmountB(),
                 spec.allOrNone(),
                 bytes32(0x0), // orderHash
-                address(0x0)  // brokerInterceptor
+                address(0x0), // brokerInterceptor
+                0, // spendableS,
+                0, // spendableLRC
+                0, // filledAmount
+                0, // actualAmountS
+                0, // actualAmountB,
+                0  // actualLRCFee
             );
             ctx.orders[i].hash = ctx.orders[i].getHash();
+            ctx.orders[i].spendableS = ctx.orders[i].getSpendable(ctx.delegate, ctx.orders[i].tokenS);
+            ctx.orders[i].spendableLRC = ctx.orders[i].getSpendable(ctx.delegate, lrcTokenAddress);
+            ctx.orders[i].filledAmount = ctx.orders[i].getFilledAmount(ctx.delegate);
+            ctx.orders[i].scale(ctx.delegate);
         }
     }
 
