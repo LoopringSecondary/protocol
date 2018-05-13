@@ -35,6 +35,22 @@ library OrderUtil {
         public
         pure
     {
+        order.hash = keccak256(
+            order.owner,
+            order.tokenS,
+            order.tokenB,
+            order.amountS,
+            order.amountB,
+            order.lrcFee,
+            order.dualAuthAddr,
+            order.broker,
+            order.orderInterceptor,
+            order.wallet,
+            order.validSince,
+            order.validUntil,
+            order.capByAmountB,
+            order.allOrNone
+        );
     }
 
     function updateBrokerAndInterceptor(

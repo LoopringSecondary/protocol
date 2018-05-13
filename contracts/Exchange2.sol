@@ -151,7 +151,7 @@ contract Exchange is IExchange, NoDefaultFunc {
         }
 
         for (uint i = 0; i < rings.length; i++){
-            Data.Ring memory ring = rings[i];
+            rings[i].calculateFillAmountAndFee();
         }
     }
 }
