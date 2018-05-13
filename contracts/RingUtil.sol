@@ -20,6 +20,7 @@ pragma experimental "ABIEncoderV2";
 
 
 import "./Data.sol";
+import "./lib/MathUint.sol";
 import "./lib/MultihashUtil.sol";
 
 /// @title An Implementation of IOrderbook.
@@ -48,6 +49,8 @@ import "./lib/MultihashUtil.sol";
 
 
 library RingUtil {
+    using MathUint      for uint;
+
     function updateHash(
         Data.Ring ring
         )
@@ -70,6 +73,81 @@ library RingUtil {
         public
         pure
     {
-        
+        uint smallestIdx = 0;
+
+        for (uint i = 0; i < ring.size; i++) {
+            uint j = (i + 1) % ring.size;
+            smallestIdx = calculateOrderFillAmount(ring, i, j, smallestIdx);
+        }
+
+        for (uint i = 0; i < smallestIdx; i++) {
+            uint j = (i + 1) % ring.size;
+            calculateOrderFillAmount(ring, i, j, smallestIdx);
+        }
+    }
+
+    function calculateOrderFillAmount(
+        Data.Ring ring,
+        uint i,
+        uint j,
+        uint smallestIdx
+        )
+        internal
+        pure
+        returns (uint newSmallestIdx)
+    {
+        // Default to the same smallest index
+        newSmallestIdx = smallestIdx;
+
+        Data.Participation memory p1 = ring.participations[i];
+        Data.Participation memory p2 = ring.participations[j];
+
+        Data.Order memory order1 = p1.order;
+        Data.Order memory order2 = p2.order;
+
+        uint fillAmountB = order1.actualAmountS.mul(
+            p1.rateB
+        ) / p1.rateS;
+
+        // if (order.capByAmountB) {
+        //     if (fillAmountB > order.amountB) {
+        //         fillAmountB = order.amountB;
+
+        //         order.fillAmountS = fillAmountB.mul(
+        //             order.rateS
+        //         ) / order.rateB;
+        //         require(order.fillAmountS > 0, "fillAmountS is 0");
+
+        //         newSmallestIdx = i;
+        //     }
+        //     order.lrcFeeState = order.lrcFee.mul(
+        //         fillAmountB
+        //     ) / order.amountB;
+        // } else {
+        //     order.lrcFeeState = order.lrcFee.mul(
+        //         order.fillAmountS
+        //     ) / order.amountS;
+        // }
+
+        // // Check All-or-None orders
+        // if (order.optAllOrNone){
+        //     if (order.optCapByAmountB) {
+        //         require(
+        //             fillAmountB >= order.amountB,
+        //             "AON failed on amountB"
+        //         );
+        //     } else {
+        //         require(
+        //             order.fillAmountS >= order.amountS,
+        //              "AON failed on amountS"
+        //         );
+        //     }
+        // }
+
+        // if (fillAmountB <= next.fillAmountS) {
+        //     next.fillAmountS = fillAmountB;
+        // } else {
+        //     newSmallestIdx = j;
+        // }
     }
 }
