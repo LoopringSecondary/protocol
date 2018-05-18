@@ -18,31 +18,46 @@ pragma solidity 0.4.23;
 pragma experimental "v0.5.0";
 pragma experimental "ABIEncoderV2";
 
+import "../impl/Data.sol";
+import "../lib/MathUint.sol";
 
-import "./Data.sol";
-import "./lib/MathUint.sol";
 
-/// @title ParticipationUtil
+/// @title ParticipationHelper
 /// @author Daniel Wang - <daniel@loopring.org>.
-library ParticipationUtil {
+library ParticipationHelper {
     using MathUint      for uint;
 
-    function updateFillAmounts(
+    function adjustOrderState(
         Data.Participation p
         )
         public
         pure
-        returns (bool isSmaller)
+    {
+        p.order.maxAmountS = p.order.maxAmountS.sub(p.fillAmountS);
+        p.order.maxAmountB = p.order.maxAmountB.sub(p.fillAmountB);
+        p.order.maxAmountLrcFee = p.order.maxAmountLrcFee.sub(p.lrcFee);
+
+        if (p.order.sellLRC) {
+            p.order.maxAmountLrcFee = p.order.maxAmountLrcFee.sub(p.fillAmountS);
+        }
+    }
+
+    function calculateFillAmounts(
+        Data.Participation p
+        )
+        public
+        pure
+        returns (bool thisOrderIsSmaller)
     {
         Data.Order memory order = p.order;
 
         p.fillAmountB = p.fillAmountS.mul(p.rateB) / p.rateS;
 
-        if (order.capByAmountB) {
+        if (order.limitByAmountB) {
             if (p.fillAmountB > order.maxAmountB) {
                 p.fillAmountB = order.maxAmountB;
                 p.fillAmountS = p.fillAmountB.mul(p.rateS) / p.rateB;
-                isSmaller = true;
+                thisOrderIsSmaller = true;
             }
             p.lrcFee = order.lrcFee.mul(p.fillAmountB) / order.amountB;
         } else {
@@ -50,8 +65,9 @@ library ParticipationUtil {
         }
     }
 
-    function updateFeeAmounts(
-        Data.Participation p
+    function calculateFeeAmounts(
+        Data.Participation p,
+        Data.Mining mining
         )
         public
         pure

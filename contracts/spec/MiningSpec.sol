@@ -18,13 +18,13 @@ pragma solidity 0.4.23;
 pragma experimental "v0.5.0";
 pragma experimental "ABIEncoderV2";
 
+import "../impl/Data.sol";
 
-import "./Data.sol";
 
 /// @title An Implementation of IOrderbook.
 /// @author Daniel Wang - <daniel@loopring.org>.
-library OrderSpec {
-    function capByAmountB(uint16 spec)
+library MiningSpec {
+    function hasMiner(uint16 spec)
         public
         pure
         returns (bool)
@@ -32,20 +32,20 @@ library OrderSpec {
         return spec & 0x2 != 0;
     }
 
-    function allOrNone(uint16 spec)
+    function hasBroker(uint16 spec)
         public
         pure
         returns (bool)
     {
-        return spec & 0x4 != 0;
+        return spec & 0x2 != 0;
     }
 
-    function hasDualAuth(uint16 spec)
+    function hasMinerInterceptor(uint16 spec)
         public
         pure
         returns (bool)
     {
-        return spec & 0x8 != 0;
+        return spec & 0x2 != 0;
     }
 
     function hasSignature(uint16 spec)
@@ -53,54 +53,6 @@ library OrderSpec {
         pure
         returns (bool)
     {
-        return spec & 0x8 != 0;
-    }
-
-    function hasBroker(uint16 spec)
-        public
-        pure
-        returns (bool)
-    {
-        return spec & 0x8 != 0;
-    }
-
-    function hasBrokerInterceptor(uint16 spec)
-        public
-        pure
-        returns (bool)
-    {
-        return spec & 0x8 != 0;
-    }
-
-    function hasWallet(uint16 spec)
-        public
-        pure
-        returns (bool)
-    {
-        return spec & 0x8 != 0;
-    }
-
-    function hasValidSince(uint16 spec)
-        public
-        pure
-        returns (bool)
-    {
-        return spec & 0x8 != 0;
-    }
-
-    function hasValidUntil(uint16 spec)
-        public
-        pure
-        returns (bool)
-    {
-        return spec & 0x8 != 0;
-    }
-
-    function hasOrderInterceptor(uint16 spec)
-        public
-        pure
-        returns (bool)
-    {
-        return spec & 0x8 != 0;
+        return spec & 0x2 != 0;
     }
 }

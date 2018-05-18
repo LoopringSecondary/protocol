@@ -18,12 +18,12 @@ pragma solidity 0.4.23;
 pragma experimental "v0.5.0";
 pragma experimental "ABIEncoderV2";
 
-import "./lib/Claimable.sol";
-import "./lib/ERC20.sol";
-import "./lib/MathUint.sol";
-import "./lib/NoDefaultFunc.sol";
-import "./IBrokerInterceptor.sol";
-import "./ITradeDelegate.sol";
+import "../iface/IBrokerInterceptor.sol";
+import "../iface/ITradeDelegate.sol";
+import "../lib/Claimable.sol";
+import "../lib/ERC20.sol";
+import "../lib/MathUint.sol";
+import "../lib/NoDefaultFunc.sol";
 
 
 /// @title An Implementation of ITradeDelegate.

@@ -18,24 +18,26 @@ pragma solidity 0.4.23;
 pragma experimental "v0.5.0";
 pragma experimental "ABIEncoderV2";
 
-import "./lib/NoDefaultFunc.sol";
-import "./IOrderRegistry.sol";
+import "../impl/Data.sol";
 
 
-/// @title An Implementation of IBrokerRegistry.
+/// @title An Implementation of IOrderbook.
 /// @author Daniel Wang - <daniel@loopring.org>.
-contract OrderRegistry is IOrderRegistry, NoDefaultFunc {
+library ParticipationSpec {
 
-    mapping (address => mapping (bytes32 => bool)) public hashMap;
-
-    function isOrderHashRegistered(
-        address owner,
-        bytes32 hash
-        )
+    function orderIndex(uint8 spec)
         public
-        view
+        pure
+        returns (uint)
+    {
+        return 0;
+    }
+
+    function marginSplitAsFee(uint8 spec)
+        public
+        pure
         returns (bool)
     {
-        return hashMap[owner][hash];
+        return false;
     }
 }

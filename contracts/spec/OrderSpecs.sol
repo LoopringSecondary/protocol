@@ -18,22 +18,23 @@ pragma solidity 0.4.23;
 pragma experimental "v0.5.0";
 pragma experimental "ABIEncoderV2";
 
-import "./Data.sol";
+import "../helper/InputsHelper.sol";
+import "../impl/Data.sol";
 import "./OrderSpec.sol";
-import "./InputsUtil.sol";
 
 
 /// @title An Implementation of IOrderbook.
 /// @author Daniel Wang - <daniel@loopring.org>.
 library OrderSpecs {
     using OrderSpec for uint16;
-    using InputsUtil for Data.Inputs;
+    using InputsHelper for Data.Inputs;
 
     function assembleOrders(
         uint16[] specs,
         Data.Inputs inputs
         )
         public
+        pure
         returns (Data.Order[] memory orders)
     {
         uint size = specs.length;
@@ -48,6 +49,7 @@ library OrderSpecs {
         Data.Inputs inputs
         )
         internal
+        pure
         returns (Data.Order memory)
     {
         return Data.Order(
@@ -65,13 +67,14 @@ library OrderSpecs {
             spec.hasValidUntil() ? inputs.nextUint() : uint(0) - 1,
             spec.hasSignature() ? inputs.nextBytes() : new bytes(0),
             spec.hasDualAuth() ? inputs.nextBytes() : new bytes(0),
-            spec.capByAmountB(),
+            spec.limitByAmountB(),
             spec.allOrNone(),
             bytes32(0x0), // hash
             address(0x0), // orderBrokerInterceptor
             0,  // spendableLRC
             0,  // maxAmountS
-            0   // maxAmountB
+            0,  // maxAmountB,
+            false // sellLRC
         );
     }
 }

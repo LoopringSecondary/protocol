@@ -18,19 +18,40 @@ pragma solidity 0.4.23;
 pragma experimental "v0.5.0";
 pragma experimental "ABIEncoderV2";
 
-import "./lib/NoDefaultFunc.sol";
-import "./IBrokerRegistry.sol";
+import "../impl/Data.sol";
 
 
-/// @title IOrderRegistry
+/// @title An Implementation of IOrderbook.
 /// @author Daniel Wang - <daniel@loopring.org>.
-contract IOrderRegistry {
+library InputsHelper {
 
-    function isOrderHashRegistered(
-        address owner,
-        bytes32 hash
+    function nextAddress(
+        Data.Inputs inputs
         )
         public
-        view
-        returns (bool);
+        pure
+        returns (address)
+    {
+        return inputs.addressList[inputs.i++];
+    }
+
+    function nextUint(
+        Data.Inputs inputs
+        )
+        public
+        pure
+        returns (uint)
+    {
+        return inputs.uintList[inputs.j++];
+    }
+
+    function nextBytes(
+        Data.Inputs inputs
+        )
+        public
+        pure
+        returns (bytes)
+    {
+        return inputs.bytesList[inputs.k++];
+    }
 }

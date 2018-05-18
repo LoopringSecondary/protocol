@@ -18,27 +18,31 @@ pragma solidity 0.4.23;
 pragma experimental "v0.5.0";
 pragma experimental "ABIEncoderV2";
 
-import "./lib/AddressUtil.sol";
-import "./lib/BytesUtil.sol";
-import "./lib/ERC20.sol";
-import "./lib/MathUint.sol";
-import "./lib/MultihashUtil.sol";
-import "./lib/NoDefaultFunc.sol";
-import "./IBrokerRegistry.sol";
-import "./IBrokerInterceptor.sol";
-import "./IExchange.sol";
-import "./IOrderRegistry.sol";
-import "./ITokenRegistry.sol";
-import "./ITradeDelegate.sol";
-import "./IMinerRegistry.sol";
+import "../iface/IBrokerRegistry.sol";
+import "../iface/IBrokerInterceptor.sol";
+import "../iface/IExchange.sol";
+import "../iface/IOrderRegistry.sol";
+import "../iface/ITokenRegistry.sol";
+import "../iface/ITradeDelegate.sol";
+import "../iface/IMinerRegistry.sol";
+
+import "../lib/AddressUtil.sol";
+import "../lib/BytesUtil.sol";
+import "../lib/ERC20.sol";
+import "../lib/MathUint.sol";
+import "../lib/MultihashUtil.sol";
+import "../lib/NoDefaultFunc.sol";
+
+import "../spec/OrderSpecs.sol";
+import "../spec/MiningSpec.sol";
+import "../spec/RingSpecs.sol";
+
+import "../helper/InputsHelper.sol";
+import "../helper/OrderHelper.sol";
+import "../helper/RingHelper.sol";
+import "../helper/MiningHelper.sol";
+
 import "./Data.sol";
-import "./OrderUtil.sol";
-import "./OrderSpecs.sol";
-import "./RingUtil.sol";
-import "./RingSpecs.sol";
-import "./MiningSpec.sol";
-import "./MiningUtil.sol";
-import "./InputsUtil.sol";
 
 
 /// @title An Implementation of IExchange.
@@ -57,10 +61,10 @@ contract Exchange is IExchange, NoDefaultFunc {
     using MiningSpec    for uint16;
     using OrderSpecs    for uint16[];
     using RingSpecs     for uint8[][];
-    using OrderUtil     for Data.Order;
-    using RingUtil      for Data.Ring;
-    using InputsUtil    for Data.Inputs;
-    using MiningUtil    for Data.Mining;
+    using OrderHelper     for Data.Order;
+    using RingHelper      for Data.Ring;
+    using InputsHelper    for Data.Inputs;
+    using MiningHelper    for Data.Mining;
 
     address public  lrcTokenAddress             = 0x0;
     address public  tokenRegistryAddress        = 0x0;
@@ -116,10 +120,17 @@ contract Exchange is IExchange, NoDefaultFunc {
 
         Data.Mining memory mining = Data.Mining(
             inputs.nextAddress(),
-            miningSpec.hasMiner() ? inputs.nextAddress() : address(0x0),
-            miningSpec.hasSignature() ? inputs.nextBytes() : new bytes(0),
+            (miningSpec.hasMiner() ? inputs.nextAddress() : address(0x0)),
+            (miningSpec.hasSignature() ? inputs.nextBytes() : new bytes(0)),
             bytes32(0x0), // hash
-            address(0x0)  // interceptor
+            address(0x0),  // interceptor
+            getSpendable(
+                ctx.delegate,
+                ctx.lrcTokenAddress,
+                tx.origin, // TODO(daniel): pay from msg.sender?
+                0x0, // broker
+                0x0  // brokerInterceptor
+            )
         );
 
         Data.Order[] memory orders = orderSpecs.assembleOrders(inputs);
@@ -149,7 +160,48 @@ contract Exchange is IExchange, NoDefaultFunc {
         }
 
         for (uint i = 0; i < rings.length; i++){
-            rings[i].calculateFillAmountAndFee();
+            rings[i].calculateFillAmountAndFee(mining);
+        }
+    }
+
+    /// @return Amount of ERC20 token that can be spent by this contract.
+    // TODO(daniel): there is another getSpendable in OrderHelper.
+    function getSpendable(
+        ITradeDelegate delegate,
+        address tokenAddress,
+        address tokenOwner,
+        address broker,
+        address brokerInterceptor
+        )
+        private
+        view
+        returns (uint spendable)
+    {
+        ERC20 token = ERC20(tokenAddress);
+        spendable = token.allowance(
+            tokenOwner,
+            address(delegate)
+        );
+        if (spendable == 0) {
+            return;
+        }
+        uint amount = token.balanceOf(tokenOwner);
+        if (amount < spendable) {
+            spendable = amount;
+            if (spendable == 0) {
+                return;
+            }
+        }
+
+        if (brokerInterceptor != tokenOwner) {
+            amount = IBrokerInterceptor(brokerInterceptor).getAllowance(
+                tokenOwner,
+                broker,
+                tokenAddress
+            );
+            if (amount < spendable) {
+                spendable = amount;
+            }
         }
     }
 }

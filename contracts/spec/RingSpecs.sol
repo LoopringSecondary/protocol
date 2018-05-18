@@ -18,15 +18,15 @@ pragma solidity 0.4.23;
 pragma experimental "v0.5.0";
 pragma experimental "ABIEncoderV2";
 
-import "./Data.sol";
+import "../helper/InputsHelper.sol";
+import "../impl/Data.sol";
 import "./ParticipationSpec.sol";
-import "./InputsUtil.sol";
 
 /// @title An Implementation of IOrderbook.
 /// @author Daniel Wang - <daniel@loopring.org>.
 library RingSpecs {
     using ParticipationSpec for uint8;
-    using InputsUtil for Data.Inputs;
+    using InputsHelper for Data.Inputs;
 
     function assembleRings(
         uint8[][] specs,
@@ -34,6 +34,7 @@ library RingSpecs {
         Data.Inputs inputs
         )
         public
+        pure
         returns (Data.Ring[] memory rings)
     {
         uint size = specs.length;
@@ -53,6 +54,7 @@ library RingSpecs {
         Data.Inputs inputs
         )
         internal
+        pure
         returns (Data.Ring memory)
     {
         uint size = pspecs.length;

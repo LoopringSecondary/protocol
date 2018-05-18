@@ -18,12 +18,12 @@ pragma solidity 0.4.23;
 pragma experimental "v0.5.0";
 pragma experimental "ABIEncoderV2";
 
+import "../iface/IBrokerRegistry.sol";
+import "../iface/IOrderRegistry.sol";
+import "../iface/ITokenRegistry.sol";
+import "../iface/ITradeDelegate.sol";
+import "../iface/IMinerRegistry.sol";
 
-import "./IBrokerRegistry.sol";
-import "./IOrderRegistry.sol";
-import "./ITokenRegistry.sol";
-import "./ITradeDelegate.sol";
-import "./IMinerRegistry.sol";
 
 library Data {
 
@@ -57,6 +57,7 @@ library Data {
         // computed fields
         bytes32 hash;
         address interceptor;
+        uint    spendableLRC;
     }
 
     struct Order {
@@ -77,15 +78,16 @@ library Data {
         uint    validUntil;
         bytes   sig;
         bytes   dualAuthSig;
-        bool    capByAmountB;
+        bool    limitByAmountB;
         bool    allOrNone;
 
         // computed fields
         bytes32 hash;
         address brokerInterceptor;
-        uint    maxAmountLRC;
+        uint    maxAmountLrcFee;
         uint    maxAmountS;
         uint    maxAmountB;
+        bool    sellLRC;
     }
 
     struct Participation {

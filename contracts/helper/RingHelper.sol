@@ -18,16 +18,16 @@ pragma solidity 0.4.23;
 pragma experimental "v0.5.0";
 pragma experimental "ABIEncoderV2";
 
+import "../impl/Data.sol";
+import "../lib/MathUint.sol";
+import "../lib/MultihashUtil.sol";
+import "./ParticipationHelper.sol";
 
-import "./Data.sol";
-import "./ParticipationUtil.sol";
-import "./lib/MathUint.sol";
-import "./lib/MultihashUtil.sol";
 
 /// @title An Implementation of IOrderbook.
-library RingUtil {
+library RingHelper {
     using MathUint for uint;
-    using ParticipationUtil for Data.Participation;
+    using ParticipationHelper for Data.Participation;
 
     function updateHash(
         Data.Ring ring
@@ -46,10 +46,11 @@ library RingUtil {
     }
 
     function calculateFillAmountAndFee(
-        Data.Ring ring
+        Data.Ring ring,
+        Data.Mining mining
         )
         public
-        pure
+        view
     {
         for (uint i = 0; i < ring.size; i++) {
             Data.Participation memory p = ring.participations[i];
@@ -61,28 +62,21 @@ library RingUtil {
         uint smallest = 0;
 
         for (uint i = 0; i < ring.size; i++) {
-            smallest = updateOrderFillAmounts(ring, i, smallest);
+            smallest = calculateOrderFillAmounts(ring, i, smallest);
         }
 
         for (uint i = 0; i < smallest; i++) {
-            updateOrderFillAmounts(ring, i, smallest);
+            calculateOrderFillAmounts(ring, i, smallest);
         }
 
         for (uint i = 0; i < ring.size; i++) {
             Data.Participation memory p = ring.participations[i];
-            p.updateFeeAmounts();
-        }
-
-        for (uint i = 0; i < ring.size; i++) {
-            Data.Participation memory p = ring.participations[i];
-            Data.Order memory order = p.order;
-            order.maxAmountS   = order.maxAmountS.sub(p.fillAmountS);
-            order.maxAmountB   = order.maxAmountB.sub(p.fillAmountB);
-            order.maxAmountLRC = order.maxAmountLRC.sub(p.lrcFee);
+            p.calculateFeeAmounts(mining);
+            p.adjustOrderState();
         }
     }
 
-    function updateOrderFillAmounts(
+    function calculateOrderFillAmounts(
         Data.Ring ring,
         uint i,
         uint smallest
@@ -95,7 +89,7 @@ library RingUtil {
         smallest_ = smallest;
 
         Data.Participation memory p = ring.participations[i];
-        if (p.updateFillAmounts()) {
+        if (p.calculateFillAmounts()) {
             smallest_ = i;
         }
 

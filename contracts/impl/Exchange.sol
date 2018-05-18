@@ -18,17 +18,17 @@ pragma solidity 0.4.23;
 pragma experimental "v0.5.0";
 pragma experimental "ABIEncoderV2";
 
-import "./lib/AddressUtil.sol";
-import "./lib/BytesUtil.sol";
-import "./lib/ERC20.sol";
-import "./lib/MathUint.sol";
-import "./lib/MultihashUtil.sol";
-import "./lib/NoDefaultFunc.sol";
-import "./IBrokerRegistry.sol";
-import "./IBrokerInterceptor.sol";
-import "./IExchange.sol";
-import "./ITokenRegistry.sol";
-import "./ITradeDelegate.sol";
+import "../lib/AddressUtil.sol";
+import "../lib/BytesUtil.sol";
+import "../lib/ERC20.sol";
+import "../lib/MathUint.sol";
+import "../lib/MultihashUtil.sol";
+import "../lib/NoDefaultFunc.sol";
+import "../iface/IBrokerRegistry.sol";
+import "../iface/IBrokerInterceptor.sol";
+import "../iface/IExchange.sol";
+import "../iface/ITokenRegistry.sol";
+import "../iface/ITradeDelegate.sol";
 
 
 /// @title An Implementation of IExchange.

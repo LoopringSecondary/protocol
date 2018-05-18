@@ -18,13 +18,13 @@ pragma solidity 0.4.23;
 pragma experimental "v0.5.0";
 pragma experimental "ABIEncoderV2";
 
+import "../impl/Data.sol";
+import "../lib/MultihashUtil.sol";
 
-import "./Data.sol";
-import "./lib/MultihashUtil.sol";
 
 /// @title An Implementation of IOrderbook.
 /// @author Daniel Wang - <daniel@loopring.org>.
-library MiningUtil {
+library MiningHelper {
 
     function updateMinerAndInterceptor(
         Data.Mining mining,
@@ -50,7 +50,7 @@ library MiningUtil {
         Data.Mining mining
         )
         public
-        view
+        pure
     {
         mining.hash = keccak256(
             mining.feeRecipient,

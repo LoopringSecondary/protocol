@@ -18,16 +18,16 @@ pragma solidity 0.4.23;
 pragma experimental "v0.5.0";
 pragma experimental "ABIEncoderV2";
 
+import "../impl/Data.sol";
+import "../iface/IBrokerInterceptor.sol";
+import "../lib/ERC20.sol";
+import "../lib/MathUint.sol";
+import "../lib/MultihashUtil.sol";
 
-import "./Data.sol";
-import "./lib/ERC20.sol";
-import "./lib/MathUint.sol";
-import "./lib/MultihashUtil.sol";
-import "./IBrokerInterceptor.sol";
 
 /// @title An Implementation of IOrderbook.
 /// @author Daniel Wang - <daniel@loopring.org>.
-library OrderUtil {
+library OrderHelper {
 
     using MathUint      for uint;
 
@@ -48,7 +48,7 @@ library OrderUtil {
             order.wallet,
             order.validSince,
             order.validUntil,
-            order.capByAmountB,
+            order.limitByAmountB,
             order.allOrNone
         );
     }
@@ -79,7 +79,7 @@ library OrderUtil {
         public
         view
     {
-        order.maxAmountLRC = getSpendable(
+        order.maxAmountLrcFee = getSpendable(
             ctx.delegate,
             ctx.lrcTokenAddress,
             order.owner,
@@ -89,7 +89,7 @@ library OrderUtil {
 
         uint filled = ctx.delegate.filled(order.hash);
 
-        if (order.capByAmountB) {
+        if (order.limitByAmountB) {
             order.maxAmountB = order.amountB.sub(filled);
             order.maxAmountS = order.amountS.mul(order.maxAmountB) / order.amountB;
         } else {
@@ -108,21 +108,10 @@ library OrderUtil {
         if (order.maxAmountS > spendableS) {
             order.maxAmountS = spendableS;
         }
-    }
 
-    function adjustState(
-        Data.Order order,
-        Data.Context ctx,
-        uint newlyFilledAmountS,
-        uint newlyFilledAmountB,
-        uint newlySpentLRC
-        )
-        public
-        view
-    {
-        order.maxAmountS   = order.maxAmountS.sub(newlyFilledAmountS);
-        order.maxAmountB   = order.maxAmountB.sub(newlyFilledAmountB);
-        order.maxAmountLRC = order.maxAmountLRC.sub(newlySpentLRC);
+        if (order.tokenS == ctx.lrcTokenAddress) {
+            order.sellLRC = true;
+        }
     }
 
     function checkBrokerSignature(
@@ -154,7 +143,7 @@ library OrderUtil {
         bytes32  miningHash
         )
         public
-        view
+        pure
     {
         if (order.dualAuthSig.length != 0) {
             MultihashUtil.verifySignature(
