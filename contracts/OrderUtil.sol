@@ -79,15 +79,7 @@ library OrderUtil {
         public
         view
     {
-        order.spendableS =  getSpendable(
-            ctx.delegate,
-            order.tokenS,
-            order.owner,
-            order.broker,
-            order.brokerInterceptor
-        );
-
-        order.spendableLRC =  getSpendable(
+        order.maxAmountLRC = getSpendable(
             ctx.delegate,
             ctx.lrcTokenAddress,
             order.owner,
@@ -95,52 +87,42 @@ library OrderUtil {
             order.brokerInterceptor
         );
 
-        order.filledAmount = ctx.delegate.filled(order.hash);
+        uint filled = ctx.delegate.filled(order.hash);
+
+        if (order.capByAmountB) {
+            order.maxAmountB = order.amountB.sub(filled);
+            order.maxAmountS = order.amountS.mul(order.maxAmountB) / order.amountB;
+        } else {
+            order.maxAmountS = order.amountS.sub(filled);
+            order.maxAmountB = order.amountB.mul(order.maxAmountS) / order.amountB;
+        }
+
+        uint spendableS = getSpendable(
+            ctx.delegate,
+            order.tokenS,
+            order.owner,
+            order.broker,
+            order.brokerInterceptor
+        );
+
+        if (order.maxAmountS > spendableS) {
+            order.maxAmountS = spendableS;
+        }
     }
 
-    function adjust(
+    function adjustState(
         Data.Order order,
         Data.Context ctx,
-        uint spendableDelta,
-        uint spendableLRCDelta,
-        uint filledAmountDelta
+        uint newlyFilledAmountS,
+        uint newlyFilledAmountB,
+        uint newlySpentLRC
         )
         public
         view
     {
-        order.spendableS = order.spendableS.sub(spendableDelta);
-        order.spendableLRC = order.spendableLRC.sub(spendableLRCDelta);
-        order.filledAmount = order.filledAmount.add(filledAmountDelta);
-
-        if (order.capByAmountB) {
-            order.actualAmountB = order.amountB.tolerantSub(order.filledAmount);
-            order.actualAmountS = order.amountS.mul(order.actualAmountB) / order.amountB;
-            if (order.actualAmountS > order.spendableS) {
-                order.actualAmountS = order.spendableS;
-                order.actualAmountB = order.amountB.mul(order.actualAmountS) / order.amountS;
-            }
-        } else {
-            order.actualAmountS = order.amountS.tolerantSub(order.filledAmount);
-            if (order.actualAmountS > order.spendableS) {
-                order.actualAmountS = order.spendableS;
-            }
-        }
-    }
-
-    function scale(
-        Data.Order order,
-        Data.Context ctx
-        )
-        public
-        view
-    {
-        if (order.capByAmountB) {
-            order.actualAmountS = order.amountS.mul(order.actualAmountB) / order.amountB;
-            order.actualLRCFee  =  order.lrcFee.mul(order.actualAmountB) / order.amountB;
-        } else {
-            order.actualAmountB = order.amountB.mul(order.actualAmountS) / order.amountS;
-            order.actualLRCFee  =  order.lrcFee.mul(order.actualAmountS) / order.amountS;
-        }
+        order.maxAmountS   = order.maxAmountS.sub(newlyFilledAmountS);
+        order.maxAmountB   = order.maxAmountB.sub(newlyFilledAmountB);
+        order.maxAmountLRC = order.maxAmountLRC.sub(newlySpentLRC);
     }
 
     function checkBrokerSignature(

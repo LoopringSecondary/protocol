@@ -146,8 +146,6 @@ contract Exchange is IExchange, NoDefaultFunc {
 
         for (uint i = 0; i < orders.length; i++) {
             orders[i].updateStates(ctx);
-            orders[i].adjust(ctx, 0, 0, 0);
-            orders[i].scale(ctx);
         }
 
         for (uint i = 0; i < rings.length; i++){

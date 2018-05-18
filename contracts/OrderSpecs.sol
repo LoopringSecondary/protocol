@@ -69,12 +69,9 @@ library OrderSpecs {
             spec.allOrNone(),
             bytes32(0x0), // hash
             address(0x0), // orderBrokerInterceptor
-            0,  // spendableS
             0,  // spendableLRC
-            0,  // filledAmount
-            0,  // actualAmountS
-            0,  // actualAmountB
-            0   // actualLRCFee
+            0,  // maxAmountS
+            0   // maxAmountB
         );
     }
 }

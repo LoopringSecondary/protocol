@@ -73,81 +73,67 @@ library RingUtil {
         public
         pure
     {
-        uint smallestIdx = 0;
-
         for (uint i = 0; i < ring.size; i++) {
-            uint j = (i + 1) % ring.size;
-            smallestIdx = calculateOrderFillAmount(ring, i, j, smallestIdx);
+            Data.Participation memory p = ring.participations[i];
+            Data.Order memory order = p.order;
+            p.fillAmountS = order.maxAmountS;
+            p.fillAmountB = order.maxAmountB;
         }
 
-        for (uint i = 0; i < smallestIdx; i++) {
-            uint j = (i + 1) % ring.size;
-            calculateOrderFillAmount(ring, i, j, smallestIdx);
+        uint smallest = 0;
+
+        for (uint i = 0; i < ring.size; i++) {
+            smallest = calculateOrderFillAmount(ring, i, smallest);
+        }
+
+        for (uint i = 0; i < smallest; i++) {
+            calculateOrderFillAmount(ring, i, smallest);
+        }
+
+        for (uint i = 0; i < ring.size; i++) {
+            Data.Participation memory p = ring.participations[i];
+            Data.Order memory order = p.order;
+            order.maxAmountS   = order.maxAmountS.sub(p.fillAmountS);
+            order.maxAmountB   = order.maxAmountB.sub(p.fillAmountB);
+            order.maxAmountLRC = order.maxAmountLRC.sub(p.lrcFee);
         }
     }
 
     function calculateOrderFillAmount(
         Data.Ring ring,
         uint i,
-        uint j,
-        uint smallestIdx
+        uint smallest
         )
         internal
         pure
-        returns (uint newSmallestIdx)
+        returns (uint smallest_)
     {
         // Default to the same smallest index
-        newSmallestIdx = smallestIdx;
+        smallest_ = smallest;
 
-        Data.Participation memory p1 = ring.participations[i];
-        Data.Participation memory p2 = ring.participations[j];
+        Data.Participation memory p = ring.participations[i];
+        Data.Order memory order = p.order;
 
-        Data.Order memory order1 = p1.order;
-        Data.Order memory order2 = p2.order;
+        p.fillAmountB = p.fillAmountS.mul(p.rateB) / p.rateS;
 
-        uint fillAmountB = order1.actualAmountS.mul(
-            p1.rateB
-        ) / p1.rateS;
+        if (order.capByAmountB) {
+            if (p.fillAmountB > order.maxAmountB) {
+                p.fillAmountB = order.maxAmountB;
+                p.fillAmountS = p.fillAmountB.mul(p.rateS) / p.rateB;
+                smallest_ = i;
+            }
+            p.lrcFee = order.lrcFee.mul(p.fillAmountB) / order.amountB;
+        } else {
+            p.lrcFee = order.lrcFee.mul(p.fillAmountS) / order.amountS;
+        }
 
-        // if (order.capByAmountB) {
-        //     if (fillAmountB > order.amountB) {
-        //         fillAmountB = order.amountB;
+        uint j = (i + 1) % ring.size;
+        Data.Participation memory nextP = ring.participations[j];
 
-        //         order.fillAmountS = fillAmountB.mul(
-        //             order.rateS
-        //         ) / order.rateB;
-        //         require(order.fillAmountS > 0, "fillAmountS is 0");
-
-        //         newSmallestIdx = i;
-        //     }
-        //     order.lrcFeeState = order.lrcFee.mul(
-        //         fillAmountB
-        //     ) / order.amountB;
-        // } else {
-        //     order.lrcFeeState = order.lrcFee.mul(
-        //         order.fillAmountS
-        //     ) / order.amountS;
-        // }
-
-        // // Check All-or-None orders
-        // if (order.optAllOrNone){
-        //     if (order.optCapByAmountB) {
-        //         require(
-        //             fillAmountB >= order.amountB,
-        //             "AON failed on amountB"
-        //         );
-        //     } else {
-        //         require(
-        //             order.fillAmountS >= order.amountS,
-        //              "AON failed on amountS"
-        //         );
-        //     }
-        // }
-
-        // if (fillAmountB <= next.fillAmountS) {
-        //     next.fillAmountS = fillAmountB;
-        // } else {
-        //     newSmallestIdx = j;
-        // }
+        if (p.fillAmountB < nextP.fillAmountS) {
+            nextP.fillAmountS = p.fillAmountB;
+        } else {
+            smallest_ = j;
+        }
     }
 }

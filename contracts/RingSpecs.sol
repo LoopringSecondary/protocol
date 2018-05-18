@@ -72,7 +72,8 @@ library RingSpecs {
                 0, // splitB
                 0, // lrcFee
                 0, // lrcReward
-                0  // fillAmountS
+                0, // fillAmountS
+                0  // fillAmountB
             );
 
             parts[i].order.tokenB = prevTokenS;

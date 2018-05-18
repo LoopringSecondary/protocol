@@ -83,12 +83,9 @@ library Data {
         // computed fields
         bytes32 hash;
         address brokerInterceptor;
-        uint    spendableS;
-        uint    spendableLRC;
-        uint    filledAmount;
-        uint    actualAmountS;
-        uint    actualAmountB;
-        uint    actualLRCFee;
+        uint    maxAmountLRC;
+        uint    maxAmountS;
+        uint    maxAmountB;
     }
 
     struct Participation {
@@ -104,6 +101,7 @@ library Data {
         uint lrcFee;
         uint lrcReward;
         uint fillAmountS;
+        uint fillAmountB;
     }
 
     struct Ring{
